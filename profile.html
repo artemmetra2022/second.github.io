@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Подключение Firebase SDK -->
+    <script type="module">
+        // Импорт Firebase модулей
+        import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+        import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+
+        // Конфигурация Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnxbzgVDndgv5tb9hTf9-_s6Upr1wngU0",
+            authDomain: "meineproject-5d634.firebaseapp.com",
+            projectId: "meineproject-5d634",
+            storageBucket: "meineproject-5d634.appspot.com",
+            messagingSenderId: "1064508732292",
+            appId: "1:1064508732292:web:edb07e5a1a8c829c21e3d1",
+            measurementId: "G-7J8FW0DN4S"
+        };
+
+        // Инициализация Firebase (проверка, чтобы не инициализировать повторно)
+        let app;
+        const apps = getApps();
+        if (!apps.length) {
+            app = initializeApp(firebaseConfig);
+        } else {
+            app = apps[0]; // Используем уже существующий экземпляр
+        }
+
+        const db = getFirestore(app); // Инициализация Firestore
+        const auth = getAuth(app); // Инициализация Authentication
+
+        // Функция для отображения профиля
+        function displayProfile() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('userId');
+
+            if (userId) {
+                getDoc(doc(db, 'users', userId)).then((userDoc) => {
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        document.getElementById('profile-username').textContent = userData.username;
+                        document.getElementById('profile-email').textContent = userData.email;
+                        document.getElementById('profile-bio').textContent = userData.bio;
+                        document.getElementById('profile-lastSeen').textContent = userData.lastSeen;
+                    } else {
+                        document.getElementById('profile-info').innerHTML = '<p>Пользователь не найден.</p>';
+                    }
+                }).catch((error) => {
+                    console.error('Ошибка при загрузке профиля:', error);
+                });
+            } else {
+                document.getElementById('profile-info').innerHTML = '<p>ID пользователя не указан.</p>';
+            }
+        }
+
+        // Выход из системы
+        document.getElementById('logout')?.addEventListener('click', function() {
+            signOut(auth).then(() => {
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('currentUsername');
+                window.location.href = 'messages.html'; // Перенаправление на титульную страницу (вход/регистрация)
+            }).catch((error) => {
+                console.error('Ошибка при выходе из системы:', error);
+            });
+        });
+
+        // Вызов функции при загрузке страницы
+        displayProfile();
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Профиль</h1>
+        <div id="profile-info">
+            <p><strong>Имя пользователя:</strong> <span id="profile-username"></span></p>
+            <p><strong>Email:</strong> <span id="profile-email"></span></p>
+            <p><strong>О себе:</strong> <span id="profile-bio"></span></p>
+            <p><strong>Последний раз в сети:</strong> <span id="profile-lastSeen"></span></p>
+        </div>
+        <button id="logout" class="btn">Выйти</button>
+    </div>
+    <script type="module" src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анонимный Мессенджер</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Подключение Firebase SDK -->
+    <script type="module">
+        // Импорт Firebase модулей
+        import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+
+        // Конфигурация Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnxbzgVDndgv5tb9hTf9-_s6Upr1wngU0",
+            authDomain: "meineproject-5d634.firebaseapp.com",
+            projectId: "meineproject-5d634",
+            storageBucket: "meineproject-5d634.appspot.com",
+            messagingSenderId: "1064508732292",
+            appId: "1:1064508732292:web:edb07e5a1a8c829c21e3d1",
+            measurementId: "G-7J8FW0DN4S"
+        };
+
+        // Инициализация Firebase (проверка, чтобы не инициализировать повторно)
+        let app;
+        const apps = getApps();
+        if (!apps.length) {
+            app = initializeApp(firebaseConfig);
+        } else {
+            app = apps[0]; // Используем уже существующий экземпляр
+        }
+
+        const auth = getAuth(app); // Инициализация Authentication
+
+        // Проверка, авторизован ли пользователь
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // Если пользователь авторизован, перенаправляем на страницу сообщений
+                window.location.href = 'messages.html';
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Добро пожаловать в Анонимный Мессенджер</h1>
+        <div class="buttons">
+            <a href="register.html" class="btn">Регистрация</a>
+            <a href="login.html" class="btn">Вход</a>
+        </div>
+    </div>
+    <script type="module" src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Подключение Firebase SDK -->
+    <script type="module">
+        // Импорт Firebase модулей
+        import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+
+        // Конфигурация Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnxbzgVDndgv5tb9hTf9-_s6Upr1wngU0",
+            authDomain: "meineproject-5d634.firebaseapp.com",
+            projectId: "meineproject-5d634",
+            storageBucket: "meineproject-5d634.appspot.com",
+            messagingSenderId: "1064508732292",
+            appId: "1:1064508732292:web:edb07e5a1a8c829c21e3d1",
+            measurementId: "G-7J8FW0DN4S"
+        };
+
+        // Инициализация Firebase (проверка, чтобы не инициализировать повторно)
+        let app;
+        const apps = getApps();
+        if (!apps.length) {
+            app = initializeApp(firebaseConfig);
+        } else {
+            app = apps[0]; // Используем уже существующий экземпляр
+        }
+
+        const db = getFirestore(app); // Инициализация Firestore
+        const auth = getAuth(app); // Инициализация Authentication
+
+        // Функция для отображения сообщений об ошибках и успехе
+        function showMessage(elementId, message, isError = true) {
+            const messageDiv = document.getElementById(elementId);
+            if (messageDiv) {
+                messageDiv.textContent = message;
+                messageDiv.style.display = 'block';
+                messageDiv.style.backgroundColor = isError ? '#ff6b6b' : '#4caf50';
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 3000);
+            } else {
+                console.error(`Элемент с ID "${elementId}" не найден.`);
+            }
+        }
+
+        // Вход пользователя
+        document.getElementById('loginForm')?.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('email')?.value;
+            const password = document.getElementById('password')?.value;
+
+            if (!email || !password) {
+                showMessage('error-message', 'Пожалуйста, заполните все поля.');
+                return;
+            }
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    const userId = userCredential.user.uid;
+                    getDoc(doc(db, 'users', userId))
+                        .then((userDoc) => {
+                            if (userDoc.exists()) {
+                                const userData = userDoc.data();
+                                localStorage.setItem('currentUser', userId);
+                                localStorage.setItem('currentUsername', userData.username);
+                                updateDoc(doc(db, 'users', userId), {
+                                    isOnline: true,
+                                    lastSeen: new Date().toISOString()
+                                }).then(() => {
+                                    window.location.href = 'messages.html';
+                                }).catch((error) => {
+                                    showMessage('error-message', 'Ошибка при обновлении данных пользователя: ' + error.message);
+                                });
+                            } else {
+                                showMessage('error-message', 'Данные пользователя не найдены.');
+                            }
+                        })
+                        .catch((error) => {
+                            showMessage('error-message', 'Ошибка при получении данных пользователя: ' + error.message);
+                        });
+                })
+                .catch((error) => {
+                    showMessage('error-message', 'Ошибка при входе: ' + error.message);
+                });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Вход</h1>
+        <div id="error-message" class="error-message"></div>
+        <div id="success-message" class="success-message"></div>
+        <form id="loginForm" class="form">
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Пароль" required>
+            <button type="submit" class="btn">Войти</button>
+        </form>
+        <p>Нет аккаунта? <a href="register.html">Зарегистрируйтесь здесь</a></p>
+    </div>
+    <script type="module" src="script.js"></script>
+</body>
+</html>
